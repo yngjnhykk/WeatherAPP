@@ -31,6 +31,8 @@ function Main({}: Props) {
     lon: number;
   }>({ lat: 0, lon: 0 });
 
+  // 위치, 날씨 조회
+
   useEffect(() => {
     const fetchData = async () => {
       await getLocation();
@@ -40,8 +42,6 @@ function Main({}: Props) {
     };
     fetchData();
   }, [location]);
-
-  console.log(process.env.mode);
 
   // 위치정보(위도, 경도)
   const locationInfo = {
@@ -81,11 +81,11 @@ function Main({}: Props) {
       );
       console.log(response);
       setLevel(response.data.list[0].main.grnd_level);
+      setTemp(response.data.list[0].main.temp.toFixed(0));
       setMinTemp(response.data.list[0].main.temp_min.toFixed(0));
       setMaxTemp(response.data.list[0].main.temp_max.toFixed(0));
       setCoord(response.data.city.coord);
       setDesc(response.data.list[0].weather[0].description);
-      setTemp(response.data.list[0].main.temp.toFixed(0));
     } catch (err) {
       console.log(err);
     }
@@ -102,9 +102,9 @@ function Main({}: Props) {
         </Text>
       </View>
       <View style={styles.body}>
-        <View style={styles.subWrap}>
+        {/* <View style={styles.subWrap}>
           <Text style={styles.subtitles}>Temperature feels like</Text>
-        </View>
+        </View> */}
         <View style={{ flexDirection: 'row' }}>
           <Text style={styles.temp}>{temp}°</Text>
 
