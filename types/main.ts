@@ -16,3 +16,17 @@ export interface locationType {
   subregion: string | null;
   timezone: string | null;
 }
+
+export interface weatherCondition {
+  icon: string | undefined;
+  gradient: string[];
+}
+export interface weatherConditions {
+  [Clouds: string]: weatherCondition;
+  Clear: weatherCondition;
+  Atmosphere: weatherCondition;
+  Snow: weatherCondition;
+  Rain: weatherCondition;
+  Drizzle: weatherCondition;
+  Thunderstorm: weatherCondition;
+}

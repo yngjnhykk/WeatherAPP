@@ -1,13 +1,47 @@
-import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
-import * as Location from 'expo-location';
-import { locationType, localTpe } from '../types/main';
-import MapView, { MapMarker, PROVIDER_GOOGLE } from 'react-native-maps';
-import axios from 'axios';
-import { WEATHER_KEY } from '@env';
+import { StyleSheet, Text, View } from 'react-native';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { StatusBar } from 'expo-status-bar';
+import * as Location from 'expo-location';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Fontisto } from '@expo/vector-icons';
+
+import { WEATHER_KEY } from '@env';
+import axios from 'axios';
+
+import { locationType, localTpe, weatherConditions } from '../types/main';
+
+const Conditions: weatherConditions = {
+  Clouds: {
+    icon: 'cloudy',
+    gradient: ['#bbb', 'white'],
+  },
+  Clear: {
+    icon: 'day-sunny',
+    gradient: ['#64b3f4', '#c2e59c'],
+  },
+  Atmosphere: {
+    icon: 'cloudy-gusts',
+    gradient: ['#4DA0B0', '#D39D38'],
+  },
+  Snow: {
+    icon: 'snow',
+    gradient: ['snow', 'white'],
+  },
+  Rain: {
+    icon: 'rains',
+    gradient: ['#bdc3c7', '#2c3e50'],
+  },
+  Drizzle: {
+    icon: 'rain',
+    gradient: ['gray', '#bbb'],
+  },
+  Thunderstorm: {
+    icon: 'lightning',
+    gradient: ['#0B0B61', 'gray'],
+  },
+};
 
 const initialLocation = {
   latitude: 37.78825,
@@ -25,7 +59,7 @@ function Main({}: Props) {
   const [minTemp, setMinTemp] = useState<number>(0);
   const [maxTemp, setMaxTemp] = useState<number>(0);
   const [desc, setDesc] = useState<string>('');
-  const [level, setLevel] = useState<number>(0);
+  const [weather, setWeather] = useState<string>('Clouds');
   const [coord, setCoord] = useState<{
     lat: number;
     lon: number;
@@ -80,19 +114,19 @@ function Main({}: Props) {
         `https://api.openweathermap.org/data/2.5/forecast?lat=${locationInfo.latitude}&lon=${locationInfo.longitude}&cnt=1&units=metric&appid=${WEATHER_KEY}`
       );
       console.log(response);
-      setLevel(response.data.list[0].main.grnd_level);
       setTemp(response.data.list[0].main.temp.toFixed(0));
       setMinTemp(response.data.list[0].main.temp_min.toFixed(0));
       setMaxTemp(response.data.list[0].main.temp_max.toFixed(0));
       setCoord(response.data.city.coord);
       setDesc(response.data.list[0].weather[0].description);
+      setWeather(response.data.list[0].weather[0].main);
     } catch (err) {
       console.log(err);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={Conditions[weather].gradient} style={{ flex: 1 }}>
       <View style={styles.cityWrap}>
         <View style={styles.refr}>
           <Text style={styles.city}>{cityInfo}</Text>
@@ -102,9 +136,6 @@ function Main({}: Props) {
         </Text>
       </View>
       <View style={styles.body}>
-        {/* <View style={styles.subWrap}>
-          <Text style={styles.subtitles}>Temperature feels like</Text>
-        </View> */}
         <View style={{ flexDirection: 'row' }}>
           <Text style={styles.temp}>{temp}°</Text>
 
@@ -113,8 +144,13 @@ function Main({}: Props) {
             <Text style={{ fontSize: 35 }}>{maxTemp}°</Text>
           </View>
         </View>
-        <Text style={styles.weather}>{desc}</Text>
-        <Text style={styles.groundLevel}>{level}m</Text>
+        <View style={{ flexDirection: 'row', gap: 20, alignItems: 'center', alignSelf: 'center', marginTop: 20 }}>
+          <View style={{ gap: 3, justifyContent: 'center' }}>
+            <Text style={styles.weather}>{weather}</Text>
+            <Text style={styles.desc}>{desc}</Text>
+          </View>
+          <Fontisto name={Conditions[weather]?.icon} size={30} style={{ marginTop: 8 }} />
+        </View>
         <MapView
           style={styles.map}
           provider={PROVIDER_GOOGLE}
@@ -128,26 +164,21 @@ function Main({}: Props) {
             longitudeDelta: 0.0421,
           }}
           mapType='mutedStandard'
-        >
-          {/* <MapMarker coordinate={{ latitude: coord.lat, longitude: coord.lon }} /> */}
-        </MapView>
+        ></MapView>
       </View>
       <StatusBar style='auto' />
-    </View>
+    </LinearGradient>
   );
 }
 
 export default Main;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1.0,
-    backgroundColor: '#ffffff',
-  },
   cityWrap: {
     flex: 1.2,
     alignItems: 'center',
-    paddingTop: 40,
+    paddingTop: 30,
+    paddingBottom: 10,
   },
   refr: {
     marginTop: 50,
@@ -179,11 +210,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#202020',
   },
-  groundLevel: {
-    fontSize: 20,
-    fontWeight: '800',
+  desc: {
+    fontSize: 18,
+    fontWeight: '500',
     color: '#202020',
   },
+
   subWrap: {
     marginTop: 20,
     backgroundColor: '#202020',
@@ -199,7 +231,7 @@ const styles = StyleSheet.create({
   },
   map: {
     borderRadius: 40,
-    marginTop: 34,
+    marginTop: 30,
     width: '80%',
     height: '60%',
   },
